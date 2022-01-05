@@ -1,0 +1,3 @@
+pip install bmp280
+Adafruit_Blinka
+
