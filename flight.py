@@ -15,13 +15,11 @@ import os
 
 
     
-    
-    
-    
-
 def flight(log):
     log.time_mark("starttimeflight")
     log.create_entry("flight function started")
+    time.sleep(3)
+    log.create_entry("after 3 seconds flight", "starttimeflight")
     
 
 

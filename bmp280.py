@@ -1,7 +1,7 @@
 import functions
 import threading
-#import board
-#import adafruit_bmp280
+import board
+import adafruit_bmp280
 import logging
 
 class bmp280():
@@ -11,12 +11,12 @@ class bmp280():
         self.data = data
         
         i2c = board.I2C()
-        sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c)
+        self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c)
         
     def read_data(self):
-        temperature = sensor.temperature
-        pressure = sensor.pressure
-        altitude = sensor.altitude
+        temperature = self.sensor.temperature
+        pressure = self.sensor.pressure
+        altitude = self.sensor.altitude
         data = [temperature, pressure, altitude]
         self.log.create_entry("bmp280 data read: " + str(data))
         return data

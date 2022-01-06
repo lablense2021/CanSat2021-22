@@ -3,7 +3,7 @@
 #import IMU
 #import camera
 import functions
-import logging
+import logging_and_datasaving
 import flight
 
 import threading 
@@ -14,7 +14,7 @@ import os
 
 startuptime=functions.cut_time(time.time())
 
-log = logging.log(startuptime, "log.txt")
+log = logging_and_datasaving.log(startuptime, "log.txt")
 time.sleep(2)
 flight.flight(log)
 

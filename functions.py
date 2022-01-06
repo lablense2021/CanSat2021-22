@@ -7,45 +7,37 @@ import pathlib
 
 
 
-#GPIO setup
-def gpio_setup():
-
-    gpio.setwarnings(False)
-    gpio.setmode(gpio.BCM)
-
-    BUZZER = 23
-    gpio.setup(BUZZER, gpio.OUT)
-
-    BUTTON = 6
-    gpio.setup(BUTTON, gpio.IN)
-
-
-
 
 #Button
-def button_presstime(cuttime, button_pin):
-    start = actime()
-    endtime = start
+class Button():
+    def __init__(self, button_pin):
+        gpio.setwarnings(False)
+        gpio.setmode(gpio.BCM)
+        self.button_pin = button_pin
+        gpio.setup(self.button_pin, gpio.IN)
 
-    while (gpio.input(button_pin) == 1) and (endtime - start) < cuttime :
-        endtime = actime()
+    def button_presstime(self, cuttime):
+        start = actime()
+        endtime = start
+        while (gpio.input(self.button_pin) == 1) and (endtime - start) < cuttime :
+            endtime = actime()
 
-    return endtime - start 
+        return endtime - start 
 
-def button_presscounter(ti, cutval, button_pin):
-    presscounter = 0
-    prevpress = 0
-    if gpio.input(button_pin) == 1:
-        beginning = actime()
-        while actime() - beginning < ti:
-            pressed = gpio.input(button_pin)
-            if prevpress != pressed and pressed == 1 :
-                presscounter += 1
-            if presscounter >= cutval:
-                break
-            prevpress = pressed
-            sleep(0.1)
-    return presscounter
+    def button_presscounter(self, ti, cutval):
+        presscounter = 0
+        prevpress = 0
+        if gpio.input(self.button_pin) == 1:
+            beginning = actime()
+            while actime() - beginning < ti:
+                pressed = gpio.input(self.button_pin)
+                if prevpress != pressed and pressed == 1 :
+                    presscounter += 1
+                if presscounter >= cutval:
+                    break
+                prevpress = pressed
+                sleep(0.1)
+        return presscounter
 
 
 #Time
@@ -57,13 +49,22 @@ def cut_time(ti):
     return float('{0:.3f}'.format(ti))
 
 
+
 #Buzzer
-def buzzer(repetitions=5, duration=0.5):
-    for i in range(repetitions):
-        gpio.output(BUZZER, gpio.HIGH)
-        sleep(duration)
-        gpio.output(BUZZER, gpio.LOW)
-        sleep(duration)
+class buzzer():
+    def __init__(self, buzzer_pin):
+        self.buzzer_pin = buzzer_pin 
+        gpio.setwarnings(False)
+        gpio.setmode(gpio.BCM)
+        gpio.setup(self.buzzer_pin, gpio.IN)
+
+
+    def buzzer(self, repetitions=5, duration=0.5):
+        for i in range(repetitions):
+            gpio.output(self.buzzer_pin , gpio.HIGH)
+            sleep(duration)
+            gpio.output(self.buzzer_pin, gpio.LOW)
+            sleep(duration)
 
 
 #OS
@@ -79,4 +80,12 @@ def search_for_filename(path):
     while pathlib.Path(path).is_file():
         number += 1
         path = name+ str(number) + ending
+    return path
+
+def search_for_directory(directory_name):
+    number = 0
+    path = directory_name+str(number)
+    while pathlib.Path(path).is_file():
+        number += 1
+        path = directory_name+ str(number)
     return path
