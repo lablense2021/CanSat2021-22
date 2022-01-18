@@ -1,6 +1,9 @@
-import time 
+import time
 
+from matplotlib.font_manager import json_dump 
 import functions
+import threading
+import json
 
 """
 class time_mark(): #Zeitmarken von denen an die zeit gemessen werden kann
@@ -15,9 +18,10 @@ class log():
         self.starttime=starttime
         self.path=functions.search_for_filename(filename)
         self.current_log=""
-        self.time_marks={}
+        self.time_marks={"log_start":self.starttime}
         self.create_entry("starttime: "+ str(self.starttime))
         self.create_entry("log_started")
+
 
     def time_mark(self, name):
         self.time_marks[name]=functions.cut_time(time.time())
@@ -25,18 +29,13 @@ class log():
 
     def get_time_passed(self, timein="log_start"):
        
-        if timein in self.time_marks:
-            time = functions.actime(self.time_marks[timein])
-
-        else : #Falls keine Zeit angegeben ist wird functions.actime() vom start des loggings an verwendet
-            time = functions.actime(self.starttime)
-        
-        return time
+        timeout = functions.actime(self.time_marks[timein])
+        return timeout
 
 
     def create_entry(self,entrytext, timemark="log_start"):
         
-        entry="\n"+ "(" + str(self.get_time_passed(timemark)) + " since " + timemark + ")" + entrytext 
+        entry="\n"+ "(" + str(self.get_time_passed(timemark)) + " since " + str(timemark) + ")" + str(entrytext)
         
         print(entry)
         self.current_log += entry
@@ -45,15 +44,41 @@ class log():
     
 
 class flight_data_dictionnary():
-    def __init__(self, filename, log):
+    def __init__(self, filename, timestamp_reference, logging_function=print):
         self.path = functions.search_for_filename(filename)
-        self.log = log 
-        self.log.create_entry("created flight_data_dictionnary")
-        self.data = {"info_about_dictionnary "+ str(log.get_time_passed())}
+        self.logging_function= logging_function
+        self.logging_function("created flight_data_dictionnary")
+        self.timestamp_reference=timestamp_reference
+        self.data = {"info_about_dictionnary(time since timestamp) ":str(functions.actime(self.timestamp_reference))}
+        self.savingthread=threading.Thread(target=self.data_saving)
 
-    def create_data_class(self, name):
-        self.data[name]=[]
+    def save_data(self):
+        self.logging_function("data saved", "starttimeflight")
+        json_dump(self.data, self.path)
+
+    def data_saving(self):
+        while self.saving==True:
+            self.save_data()
+            time.sleep(5)
+    
+    def start_data_saving(self):
+        self.logging_function("started data saving","starttimeflight")
+        self.saving=True
+        self.savingthread.start()
         
+
+    def stop_data_saving(self):
+        self.logging_function("stopped data saving","starttimeflight")
+        self.saving=False
+
+
+
+    
+
+    
+
+
+    
 
 
 

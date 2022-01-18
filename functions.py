@@ -1,6 +1,6 @@
 from time import sleep
 import time
-#import RPi.GPIO as gpio
+import RPi.GPIO as gpio
 import os
 
 import pathlib
@@ -28,8 +28,8 @@ class Button():
         presscounter = 0
         prevpress = 0
         if gpio.input(self.button_pin) == 1:
-            beginning = actime()
-            while actime() - beginning < ti:
+            beginning = cut_time(time.time())
+            while cut_time(time.time()) - beginning < ti:
                 pressed = gpio.input(self.button_pin)
                 if prevpress != pressed and pressed == 1 :
                     presscounter += 1
@@ -68,8 +68,9 @@ class buzzer():
 
 
 #OS
-def shut_down(data, datapath):
-    os.system("sudo shutdown ")
+def shut_down():
+    print("shutdown called")
+    # os.system("sudo shutdown now")
 
 
 def search_for_filename(path):

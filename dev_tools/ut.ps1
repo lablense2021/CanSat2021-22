@@ -9,7 +9,7 @@ Param(
 
 [string] $f = $loc + "\" + $fn
 
-scp $f pi@192.168.0.10:software
+scp $f pi@192.168.3.132:software
 
 $c = "sudo python3 software/" + $fn 
 
