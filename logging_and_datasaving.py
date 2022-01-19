@@ -53,7 +53,7 @@ class flight_data_dictionnary():
         self.savingthread=threading.Thread(target=self.data_saving)
 
     def save_data(self):
-        self.logging_function("data saved", "starttimeflight")
+        self.logging_function("data saved")
         json_dump(self.data, self.path)
 
     def data_saving(self):
@@ -62,13 +62,13 @@ class flight_data_dictionnary():
             time.sleep(5)
     
     def start_data_saving(self):
-        self.logging_function("started data saving","starttimeflight")
+        self.logging_function("started data saving")
         self.saving=True
         self.savingthread.start()
         
 
     def stop_data_saving(self):
-        self.logging_function("stopped data saving","starttimeflight")
+        self.logging_function("stopped data saving")
         self.saving=False
 
 

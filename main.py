@@ -20,13 +20,14 @@ class menu():
         self.pos=0
         self.options=options
         self.when_called=when_called
-        self.display_function(str(self.options[self.pos]))
         self.log_function("menu created")
 
-
+    def show_option(self):
+        self.display_function(str(self.options[self.pos]))
+     
     def change_menu_option(self, hops=1): 
         self.pos=(self.pos+hops)%len(self.options)
-        self.display_function(str(self.options[self.pos]))
+        self.show_option()
         self.log_function("changed menu option to" + str(self.options[self.pos]))
 
     def choose_option(self):
@@ -35,15 +36,20 @@ class menu():
         
 
 def button_open_menu():
+    
+   
     log.create_entry("menu opened with option " + str(menu.options[menu.pos]))
+    menu.show_option()
     while True:
         presses = button.button_presscounter(1, 2)
         if presses==1:
             menu.change_menu_option(1)
 
         if presses==2:
+            display.stop_scroll()
             menu.choose_option()
             break
+
 
 
 def flight():
@@ -80,8 +86,10 @@ if __name__ == "__main__":
     options = ["Flight Control Software", "Acces CanSat through WLAN", "Shutdown CanSat"]
     when_called= [flight, lambda: read_data.read(button, button_open_menu, log.create_entry), functions.shut_down]
     
-    menu = menu(options, when_called, log.create_entry, display.show_text)
+    menu = menu(options, when_called, log.create_entry, display.start_scroll)
     button_open_menu()
+
+    
     
     
 
