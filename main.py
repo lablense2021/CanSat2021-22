@@ -64,6 +64,7 @@ def flight():
     
 
     bmp280.sensor_test()
+    time.sleep(5)
     data.stop_data_saving()
     print(data.data)
     button_open_menu()

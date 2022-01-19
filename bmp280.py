@@ -21,9 +21,9 @@ class bmp280():
         
     def read_data(self):
         try:
-            temperature = self.sensor.temperature
-            pressure = self.sensor.pressure
-            altitude = self.sensor.altitude
+            temperature = functions.cut_time(self.sensor.temperature)
+            pressure = functions.cut_time(self.sensor.pressure)
+            altitude = functions.cut_time(self.sensor.altitude)
             data = [temperature, pressure, altitude]
         except:
             data="ErrorOccured"

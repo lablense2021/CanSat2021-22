@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 import threading 
 import time
+import functions
 
 class oled():
     def __init__(self,log_function=print):
@@ -12,7 +13,7 @@ class oled():
         self.oled_reset = digitalio.DigitalInOut(board.D4)
         self.WIDTH = 128
         self.HEIGHT = 32 
-        self.update_time=0.25
+        self.update_time=1
 
         # Use for I2C.
         i2c = board.I2C()
@@ -32,7 +33,7 @@ class oled():
 
     def stop_scroll(self):
         self.scroll = False
-        time.sleep(self.update_time+0.05)
+        time.sleep(0.15)
         self.oled.fill(0)
         self.oled.show()
 
@@ -60,14 +61,18 @@ class oled():
     def scroll_text(self, text):
         self.display_letters = 10
         self.ac_pos = 0
-        text = text + "   "
+        hops=2
+        text = text + (len(text)%hops-1)*" "
         self.scroll= True
         self.oled.fill(0)
         self.oled.show()
+        self.show_text(text[self.ac_pos:self.ac_pos+self.display_letters])
+        last_time=functions.cut_time(time.time())
         while self.scroll == True:
-            self.show_text(text[self.ac_pos:self.ac_pos+self.display_letters])
-            self.ac_pos = (self.ac_pos + 1)%len(text) #Problem bei Texten die nicht durch 3 teilbsr sind
-            time.sleep(self.update_time)
+            if functions.cut_time(time.time())-last_time >= self.update_time:
+                self.ac_pos = (self.ac_pos + hops )%len(text) #Problem bei Texten die nicht durch 3 teilbsr sind
+                self.show_text(text[self.ac_pos:self.ac_pos+self.display_letters])
+            time.sleep(0.1)
         self.oled.fill(0)
         self.oled.show()
 
