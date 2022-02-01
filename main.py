@@ -1,9 +1,10 @@
 import oled 
 import bmp280
-import IMU
+import imu
 import camera
 import functions
 import logging_and_datasaving
+
 
 import read_data
 
@@ -52,22 +53,47 @@ def button_open_menu():
 
 
 
+
+
+
+
+
+
+
 def flight():
+    #init
     import bmp280
     import camera
+    import imu
     log.time_mark("starttimeflight")
     log.create_entry("flight function started")
     data = logging_and_datasaving.flight_data_dictionnary(("flightdata.json"), (log.time_marks["log_start"]) ,(lambda x: log.create_entry(x, "starttimeflight" )))
     data.start_data_saving()
     bmp280 = bmp280.bmp280(data.data, log.time_marks["starttimeflight"], lambda entry : log.create_entry(entry, "starttimeflight"))
-    #camera = camera.pi_camera()
-    
+    #camera = camera.pi_camera("img.png","images",log.time_marks["starttimeflight"], lambda entry: log.create_entry(entry, "starttimeflight"))
+    #imu = imu.imu(data.data, log.time_marks["starttimeflight"],lambda entry : log.create_entry(entry, "starttimeflight"))
 
-    bmp280.sensor_test()
+
+    #camera.start_imaging()
+    bmp280.start_thread()
+    #imu.start_thread()
     time.sleep(5)
+    
+    while bmp280.check_if_down() !=  True:
+        print("falling")
+        time.sleep(0.1)
+
+
+    camera.stop_thread()
+    bmp280.stop_thread()
+    imu.stop_thread()
     data.stop_data_saving()
+    camera.close()
     print(data.data)
     button_open_menu()
+
+
+
 
 
     

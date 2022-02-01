@@ -3,20 +3,21 @@ import threading
 import board
 import adafruit_bmp280
 import logging_and_datasaving
-
+import time
+import numpy as np 
 class bmp280():
     def __init__(self, data,  timestamp_reference,  log_function=print):
         self.log_function =log_function
         self.timestamp_reference= timestamp_reference
         self.data = data
-        self.data["bmp280"] = []
-        self.data["bmp280_test"] = []
+        self.data["bmp280"] = [[],[],[],[]]
+        self.data["bmp280_test"] = [[],[],[],[]]
         try:
             i2c = board.I2C()
             self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, 0x76)
         except:
             self.log_function("Error occurred in I2C config")
-        self.thread=threading.Thread(target=lambda: self.safe_data("bmp280"))
+        self.thread=threading.Thread(target=lambda: self.data_capture("bmp280"))
 
         
     def read_data(self):
@@ -31,18 +32,25 @@ class bmp280():
         return data
 
     def safe_data(self, data_entry):
-        self.data[data_entry].append([self.read_data(), functions.actime(self.timestamp_reference)])
+        self.data[data_entry][0].append(self.read_data()[0])
+        self.data[data_entry][1].append(self.read_data()[1])
+        self.data[data_entry][2].append(self.read_data()[2])
+        self.data[data_entry][3].append(functions.actime(self.timestamp_reference))
 
-    def data_capture(self):
+
+    def data_capture(self, data_entry):
         while self.capture_on==True:
-            self.safe_data()
+            self.safe_data(data_entry)
+            time.sleep(0.1)
 
     def start_thread(self):
         self.capture_on=True
         self.thread.start()
+        self.log_function("bmp280 thread started")
 
     def stop_thread(self):
         self.capture_on=False
+        self.log_function("bmp280 thread stopped")
 
     def sensor_test(self):
         self.log_function("sensor test started")
@@ -52,14 +60,22 @@ class bmp280():
 
 
 
+    def check_if_down(self):
+        time_pos_1 = functions.find_time(-2, self.data["bmp280"][3])
+        time_1 = self.data["bmp280"][3][time_pos_1]
+        time_2 = self.data["bmp280"][3][-1]
+        timedif = time_2-time_1
+
+        alt_1 = self.data["bmp280"][2][time_pos_1]
+        alt_2 = self.data["bmp280"][2][-1]
+        altdif = alt_2-alt_1
+
+        v = altdif/timedif
+        if v>-5:
+            return True
+
         
 
-
-
-    
-
-
-
-
-
+        
+        
         

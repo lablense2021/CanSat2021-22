@@ -67,6 +67,17 @@ class buzzer():
             sleep(duration)
 
 
+def find_time( search, time):
+        ac_pos=-1
+        while time[ac_pos]-time[-1] > search :
+            print(time[ac_pos]-time[-1])
+            ac_pos -= 1
+            print(ac_pos)
+
+        if (time[-1]+search)-time[ac_pos+1]<time[ac_pos]-(time[-1]+search):
+            ac_pos += 1
+        return ac_pos
+
 #OS
 def shut_down():
     print("shutdown called")
@@ -86,7 +97,7 @@ def search_for_filename(path):
 def search_for_directory(directory_name):
     number = 0
     path = directory_name+str(number)
-    while pathlib.Path(path).is_file():
+    while pathlib.Path(path).is_dir():
         number += 1
         path = directory_name+ str(number)
     return path
