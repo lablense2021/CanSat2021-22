@@ -50,8 +50,14 @@ def cut_time(ti):
 
 
 
+#maths
+def betrag(inp):
+    return (inp**2)**0.5
+
+
+
 #Buzzer
-class buzzer():
+class signal():
     def __init__(self, buzzer_pin):
         self.buzzer_pin = buzzer_pin 
         gpio.setwarnings(False)
@@ -59,7 +65,7 @@ class buzzer():
         gpio.setup(self.buzzer_pin, gpio.IN)
 
 
-    def buzzer(self, repetitions=5, duration=0.5):
+    def signal(self, repetitions=5, duration=0.5):
         for i in range(repetitions):
             gpio.output(self.buzzer_pin , gpio.HIGH)
             sleep(duration)
@@ -67,15 +73,18 @@ class buzzer():
             sleep(duration)
 
 
-def find_time( search, time):
+
+
+
+def find_time(search, time):
         ac_pos=-1
         while time[ac_pos]-time[-1] > search :
-            print(time[ac_pos]-time[-1])
             ac_pos -= 1
-            print(ac_pos)
 
-        if (time[-1]+search)-time[ac_pos+1]<time[ac_pos]-(time[-1]+search):
+        
+        if (time[-1]+search)-time[ac_pos+1]>time[ac_pos]-(time[-1]+search):
             ac_pos += 1
+
         return ac_pos
 
 #OS
@@ -101,3 +110,5 @@ def search_for_directory(directory_name):
         number += 1
         path = directory_name+ str(number)
     return path
+
+

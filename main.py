@@ -4,6 +4,7 @@ import imu
 import camera
 import functions
 import logging_and_datasaving
+import reaction_wheel_control
 
 
 import read_data
@@ -32,7 +33,6 @@ class menu():
         self.log_function("changed menu option to" + str(self.options[self.pos]))
 
     def choose_option(self):
-        print(self.pos)
         self.when_called[self.pos]()
         
 
@@ -50,6 +50,7 @@ def button_open_menu():
             display.stop_scroll()
             menu.choose_option()
             break
+        time.sleep(0.1)
 
 
 
@@ -65,31 +66,44 @@ def flight():
     import bmp280
     import camera
     import imu
+    display.show_text("On Flight!")
     log.time_mark("starttimeflight")
     log.create_entry("flight function started")
     data = logging_and_datasaving.flight_data_dictionnary(("flightdata.json"), (log.time_marks["log_start"]) ,(lambda x: log.create_entry(x, "starttimeflight" )))
     data.start_data_saving()
     bmp280 = bmp280.bmp280(data.data, log.time_marks["starttimeflight"], lambda entry : log.create_entry(entry, "starttimeflight"))
-    #camera = camera.pi_camera("img.png","images",log.time_marks["starttimeflight"], lambda entry: log.create_entry(entry, "starttimeflight"))
-    #imu = imu.imu(data.data, log.time_marks["starttimeflight"],lambda entry : log.create_entry(entry, "starttimeflight"))
-
-
-    #camera.start_imaging()
-    bmp280.start_thread()
-    #imu.start_thread()
-    time.sleep(5)
+    camera = camera.pi_camera("img.png","images",log.time_marks["starttimeflight"], lambda entry: log.create_entry(entry, "starttimeflight"))
+    imu = imu.imu(data.data, log.time_marks["starttimeflight"],lambda entry : log.create_entry(entry, "starttimeflight"))
+    imu.calibrate("calibration.json")
+    reac = reaction_wheel_control.reaction_wheel(lambda: data.data["imu"][5][-1],lambda entry : log.create_entry(entry, "starttimeflight"))
     
-    while bmp280.check_if_down() !=  True:
+
+    """while bmp280.check_if_acent() != True:
+        print("Waiting on acent")main.py
+    
+    while bmp280.check_if_decent() != True:
+       print("waiting on decent")"""
+    bmp280.start_thread()
+    camera.start_imaging()
+    imu.start_thread()
+    reac.start_thread()
+    
+    time.sleep(50)
+
+    while bmp280.check_if_down() != True:
         print("falling")
         time.sleep(0.1)
 
 
     camera.stop_thread()
     bmp280.stop_thread()
+    reac.stop_thread()
     imu.stop_thread()
-    data.stop_data_saving()
     camera.close()
-    print(data.data)
+    
+    data.stop_data_saving()
+    display.close_oled()
+    
     button_open_menu()
 
 
@@ -106,12 +120,13 @@ if __name__ == "__main__":
     log = logging_and_datasaving.log(startuptime, "log.txt")
     log.create_entry("main started")
     button = functions.Button(16)
+    
     display = oled.oled()
 
 
     #defining of menu 
     options = ["Flight Control Software", "Acces CanSat through WLAN", "Shutdown CanSat"]
-    when_called= [flight, lambda: read_data.read(button, button_open_menu, log.create_entry), functions.shut_down]
+    when_called= [flight, lambda: read_data.read(button, button_open_menu, log.create_entry, display.start_scroll), functions.shut_down]
     
     menu = menu(options, when_called, log.create_entry, display.start_scroll)
     button_open_menu()

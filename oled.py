@@ -13,7 +13,7 @@ class oled():
         self.oled_reset = digitalio.DigitalInOut(board.D4)
         self.WIDTH = 128
         self.HEIGHT = 32 
-        self.update_time=1
+        self.update_time=0.5
 
         # Use for I2C.
         i2c = board.I2C()
@@ -33,7 +33,11 @@ class oled():
 
     def stop_scroll(self):
         self.scroll = False
-        time.sleep(0.15)
+        try:
+            while self.text_thread.is_alive():
+                time.sleep(0.1)
+        except:
+            self.log_function("no text_thread to stop found")
         self.oled.fill(0)
         self.oled.show()
 
@@ -72,9 +76,15 @@ class oled():
             if functions.cut_time(time.time())-last_time >= self.update_time:
                 self.ac_pos = (self.ac_pos + hops )%len(text) #Problem bei Texten die nicht durch 3 teilbsr sind
                 self.show_text(text[self.ac_pos:self.ac_pos+self.display_letters])
+                last_time=functions.cut_time(time.time())
             time.sleep(0.1)
         self.oled.fill(0)
         self.oled.show()
+
+
+    def close_oled(self):
+        self.oled.fill(0)
+        self.stop_scroll()
 
 
             

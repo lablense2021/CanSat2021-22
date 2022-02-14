@@ -40,7 +40,7 @@ class bmp280():
 
     def data_capture(self, data_entry):
         while self.capture_on==True:
-            self.safe_data(data_entry)
+            self.safe_data(data_entry) 
             time.sleep(0.1)
 
     def start_thread(self):
@@ -50,6 +50,8 @@ class bmp280():
 
     def stop_thread(self):
         self.capture_on=False
+        while self.thread.is_alive():
+            time.sleep(0.1)
         self.log_function("bmp280 thread stopped")
 
     def sensor_test(self):
@@ -59,8 +61,7 @@ class bmp280():
 
 
 
-
-    def check_if_down(self):
+    def speed(self):
         time_pos_1 = functions.find_time(-2, self.data["bmp280"][3])
         time_1 = self.data["bmp280"][3][time_pos_1]
         time_2 = self.data["bmp280"][3][-1]
@@ -71,8 +72,33 @@ class bmp280():
         altdif = alt_2-alt_1
 
         v = altdif/timedif
-        if v>-5:
-            return True
+        self.log_function("speed is: " + str(v))
+        return v
+
+    def check_if_down(self):
+        if 5>self.speed()>-5:
+            bool =  True
+        else:
+            bool =  False
+        self.log_function("down is: " + str(bool))
+        return bool
+
+    def check_if_acent(self):
+        if 5<self.speed():
+            bool = True
+        else:
+            bool =  False
+        self.log_function("acent is: " + str(bool))
+        return bool
+            
+    def check_if_decent(self):
+        if self.speed()<-5:
+            bool = True
+        else:
+            bool = False
+        self.log_function("decent is: " + str(bool))
+        return bool
+
 
         
 

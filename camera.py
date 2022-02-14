@@ -33,6 +33,7 @@ class pi_camera():
                 self.log_function("camera image error ")
 
 
+
     def start_imaging(self):
         self.thread_on=True
         self.thread.start()
@@ -40,7 +41,11 @@ class pi_camera():
     
     def stop_thread(self):
         self.thread_on=False
+        while self.thread.is_alive():
+            self.log_function("waiting for imaging_thread to stop")
+            time.sleep(0.1)
         self.log_function("imaging thread stopped")
 
     def close(self):
-        self.camera.close()    
+        self.camera.close()
+    

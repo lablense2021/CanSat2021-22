@@ -1,6 +1,7 @@
 import time
 import RPi.GPIO as GPIO
 import numpy as np
+import threading
 
 import imu
 import functions
@@ -50,52 +51,45 @@ data={}
 imu = imu.imu(data, functions.cut_time(time.time()))
 
 def run():
-    val=0
-    imu.safe_data()
-    failure_sum=0
-    imu.safe_data()
-    for i in range(4000):
-        read = imu.read_all()
-        read_val = read[1][2]
-        failure_sum += read_val
-        
-    failure= failure_sum/4000
-    print("failure: " + str(failure))
-    time.sleep(2)
     
+    imu.calibrate("calibration.json")
     read_vals=0
+    val=0
     for i in range(5000):
         correction_val=0
-        read = imu.read_all()
-        u_read_val = read[1][2]
-        read_val = u_read_val-failure
+        
         imu.safe_data()
+        read_val = data["imu"][5][-1]
         print(read_val)
         read_vals += read_val
-       
         
+       
+        """
         if betrag(read_val)>0.25:
-            correction_val=(betrag(read_val)/read_val)*(5+betrag(read_val)*5)
-            print(correction_val)
+            correction_val=(betrag(read_val)/read_val)*((betrag(read_val)**4)+5)
+            
 
         
-        val = val + correction_val
-        if val>99.9999:
+        val += correction_val
+        if val>100.0:
             val=100
+        elif val<-100.0:
+            val=-100
         
 
        
             
         print(val)
-        rot(val)    
+        rot(val)
+        """
         
         
     
     
 
-    read_vals=read_vals/5000
+    read_val_d=read_vals/5000
     print("Read_vals")
-    print(read_vals)
+    print(read_val_d)
         
         
 

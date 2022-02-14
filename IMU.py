@@ -1,6 +1,10 @@
+from matplotlib.font_manager import json_dump, json_load
 import functions
 import time
 import threading
+import os
+import pathlib
+import json
 
 import time
 import board
@@ -15,9 +19,10 @@ class imu():
         self.timestamp_reference=timestamp_reference
         self.log_function=log_function
         self.data = data
-        self.data["imu"]=[[],[],[],[],[],[],[],[],[]]
+        self.data["imu"]=[[],[],[],[],[],[],[],[],[],[]]
         self.data["imu_test"]=[[],[],[],[],[],[],[],[],[]]
-        self.thread=threading.Thread(target=self.data_capture("imu"))
+        self.thread=threading.Thread(target= lambda: self.data_capture())
+        self.calibration_values = [0,0,0,0,0,0,0,0,0,]
         
 
     def read_all(self):
@@ -25,21 +30,23 @@ class imu():
         acceleration = self.accel_gyro.acceleration
         gyro = self.accel_gyro.gyro
         magnetic = self.magnetometer.magnetic
-        data=[acceleration, gyro, magnetic]
+        data_raw=[acceleration, gyro, magnetic]
+        data=[]
+        for i in range(len(data_raw)):
+            
+            for n in range(len(data_raw[i])):
+                
+                data.append(data_raw[i][n]-self.calibration_values[(i)*3+n])
+       
+        
         #self.log_function("imu data read"+ str(data))
         return data
 
 
-    def safe_data(self,data_entry):
-        self.data[data_entry][0].append(self.read_all()[0][0])
-        self.data[data_entry][1].append(self.read_all()[0][1])
-        self.data[data_entry][2].append(self.read_all()[0][2])
-        self.data[data_entry][3].append(self.read_all()[1][0])
-        self.data[data_entry][4].append(self.read_all()[1][1])
-        self.data[data_entry][5].append(self.read_all()[1][2])
-        self.data[data_entry][6].append(self.read_all()[2][0])
-        self.data[data_entry][7].append(self.read_all()[2][1])
-        self.data[data_entry][8].append(self.read_all()[2][2])
+    def safe_data(self,data_entry="imu"):
+        read_data = self.read_all()
+        for i in range(len(read_data)):
+            self.data[data_entry][i].append(read_data[i])
         self.data[data_entry][9].append(functions.actime(self.timestamp_reference))
 
 
@@ -51,16 +58,50 @@ class imu():
             print("Magnetic      X:{0:7.2f}, Y:{1:7.2f}, Z:{2:7.2f} uT".format(*data[2]))
             print("")
             
+
+
+    def calibrate(self, path):
+        if pathlib.Path(path).is_file():
+            self.calibration_values=json_load(path)["imu_calibration"]
+        else:
+            self.data["imu_calibration_values"]=[[],[],[],[],[],[],[],[],[],[]]
+            for i in range(10000):
+                self.safe_data("imu_calibration_values")
+
+            for n in range(len(self.calibration_values)):
+                print(n)
+                if n < 6:
+                    sum = 0
+                    for i in self.data["imu_calibration_values"][n]:
+                        sum += i
+                    if n ==2:
+                        self.calibration_values[n]=(sum/len(self.data["imu_calibration_values"][n]))-9.81
+                    else:
+                        self.calibration_values[n]=sum/len(self.data["imu_calibration_values"][n])
+               
+
+            
+            json_dump({"imu_calibration":self.calibration_values}, path)
+            self.log_function("imu calibration done. values: " + str(self.calibration_values))
+            
+
+
+
+
+
+
+
+
     #Thread
     def start_thread(self):
         self.capture_on=True
         self.thread.start()
         self.log_function("imu capture thread started")
 
-    def data_capture(self,data_entry):
+    def data_capture(self,data_entry="imu"):
         while self.capture_on==True:
-            self.safe_data(data_entry)
-            time.sleep(0.1)
+            self.safe_data("imu")
+            time.sleep(0.0001)
 
    
 
