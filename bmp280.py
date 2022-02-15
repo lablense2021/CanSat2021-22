@@ -6,12 +6,14 @@ import logging_and_datasaving
 import time
 import numpy as np 
 class bmp280():
-    def __init__(self, data,  timestamp_reference,  log_function=print):
+    def __init__(self, data,  timestamp_reference,  log_function=print, decent_treshold=-5, acent_threshold=5):
         self.log_function =log_function
         self.timestamp_reference= timestamp_reference
         self.data = data
         self.data["bmp280"] = [[],[],[],[]]
         self.data["bmp280_test"] = [[],[],[],[]]
+        self.decent_treshold=decent_treshold
+        self.acent_threshold=acent_threshold
         try:
             i2c = board.I2C()
             self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, 0x76)
@@ -41,7 +43,7 @@ class bmp280():
     def data_capture(self, data_entry):
         while self.capture_on==True:
             self.safe_data(data_entry) 
-            time.sleep(0.1)
+            time.sleep(0.01)
 
     def start_thread(self):
         self.capture_on=True
@@ -76,7 +78,7 @@ class bmp280():
         return v
 
     def check_if_down(self):
-        if 5>self.speed()>-5:
+        if self.acent_threshold>self.speed()>self.decent_treshold:
             bool =  True
         else:
             bool =  False
@@ -84,7 +86,7 @@ class bmp280():
         return bool
 
     def check_if_acent(self):
-        if 5<self.speed():
+        if self.acent_threshold<self.speed():
             bool = True
         else:
             bool =  False
@@ -92,7 +94,7 @@ class bmp280():
         return bool
             
     def check_if_decent(self):
-        if self.speed()<-5:
+        if self.speed()<self.decent_treshold:
             bool = True
         else:
             bool = False

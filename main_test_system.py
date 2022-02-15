@@ -54,6 +54,7 @@ def button_open_menu():
 
 def flight():
     # init
+    import time
     import bmp280
     import camera
     import imu
@@ -63,8 +64,13 @@ def flight():
     data = logging_and_datasaving.flight_data_dictionnary(("flightdata.json"), (log.time_marks["log_start"]),
                                                           (lambda x: log.create_entry(x, "starttimeflight")))
     data.start_data_saving()
-    bmp280 = bmp280.bmp280(data.data, log.time_marks["starttimeflight"],
-                           lambda entry: log.create_entry(entry, "starttimeflight"))
+    bmp280 = bmp280.bmp280(
+        data.data,
+        log.time_marks["starttimeflight"],
+        lambda entry: log.create_entry(entry, "starttimeflight"),
+        decent_treshold=-0.5,
+        acent_threshold=5
+    )
     camera = camera.pi_camera("img.png", "images", log.time_marks["starttimeflight"],
                               lambda entry: log.create_entry(entry, "starttimeflight"))
     imu = imu.imu(data.data, log.time_marks["starttimeflight"],
@@ -72,15 +78,15 @@ def flight():
     imu.calibrate("calibration.json")
     reac = reaction_wheel_control.reaction_wheel(lambda: data.data["imu"][5][-1],
                                                  lambda entry: log.create_entry(entry, "starttimeflight"))
-
+    print("hello")
+    bmp280.start_thread()
     """while bmp280.check_if_acent() != True:
         print("Waiting on acent")main.py
     """
-
+    time.sleep(5)
     while bmp280.check_if_decent() != True:
-       print("waiting on decent")
+        print("waiting on decent")
 
-    bmp280.start_thread()
     camera.start_imaging()
     imu.start_thread()
     reac.start_thread()
