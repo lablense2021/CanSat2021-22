@@ -6,16 +6,40 @@ import scipy.integrate as integrate
 
 from matplotlib.font_manager import json_dump, json_load
 
+def rotation_x(angle):
+    return np.matrix([
+        [1, 0, 0],
+        [0, cos(angle), -sin(angle)],
+        [0, sin(angle), cos(angle)],
+    ])
+
+def rotation_z(angle):
+    return np.matrix([
+        [cos(angle), -sin(angle), 0],
+        [sin(angle), cos(angle), 0],
+        [0, 0, 1],
+    ])
+
+def rotation_y(angle):
+    return np.matrix([
+        [cos(angle), 0, sin(angle)],
+        [0, 1, 0],
+        [-sin(angle), 0, cos(angle)],
+    ])
+
+
+
+
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
 WIDTH, HEIGHT = 800, 600
-pygame.display.set_caption("3D projection in pygame!")
+pygame.display.set_caption("CanSat Cube Visualization")
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-scale = 100
 
+scale = 100
 circle_pos = [WIDTH / 2, HEIGHT / 2]  # x, y
 
 angle = 0
@@ -50,11 +74,14 @@ def connect_points(i, j, points):
 ##################
 
 
-data = json_load("flightdata48.json")["imu"]
+data = json_load("flightdata2.json")["imu"]
 
 ##################
 clock = pygame.time.Clock()
-v = 0
+x_angle = 0
+y_angle = 0
+z_angle = 0
+
 
 for event in pygame.event.get():
     if event.type == pygame.QUIT:
@@ -75,40 +102,31 @@ for i in range(0, len(data[5]) - 5, 5):
 
     # print(len(data[5]))
     # print(i)
-    deltav = np.trapz(data[5][i:i + 6], data[9][i:i + 6])
 
-    v += deltav
+    deltax_angle = np.trapz(data[3][i:i + 6], data[9][i:i + 6])
+    deltay_angle = np.trapz(data[5][i:i + 6], data[9][i:i + 6])
+    deltaz_angle = np.trapz(data[4][i:i + 6], data[9][i:i + 6])
+
+    x_angle += -deltax_angle
+    y_angle += -deltay_angle
+    z_angle += -deltaz_angle
 
     clock.tick(60)
 
     # update stuff
 
-    rotation_z = np.matrix([
-        [cos(angle), -sin(angle), 0],
-        [sin(angle), cos(angle), 0],
-        [0, 0, 1],
-    ])
 
-    rotation_y = np.matrix([
-        [cos(angle), 0, sin(angle)],
-        [0, 1, 0],
-        [-sin(angle), 0, cos(angle)],
-    ])
 
-    rotation_x = np.matrix([
-        [1, 0, 0],
-        [0, cos(angle), -sin(angle)],
-        [0, sin(angle), cos(angle)],
-    ])
 
-    angle = v
 
     screen.fill(WHITE)
     # drawining stuff
 
     i = 0
     for point in points:
-        rotated2d = np.dot(rotation_y, point.reshape((3, 1)))
+        rotated2d = np.dot(rotation_y(y_angle), point.reshape((3, 1)))
+        #rotated2d = np.dot(rotation_x(x_angle), rotated2d)
+        #rotated2d = np.dot(rotation_z(z_angle), rotated2d)
         rotated2d = np.dot(preset, rotated2d)
         # rotated2d = np.dot(rotation_x, rotated2d)
 
