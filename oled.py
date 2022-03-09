@@ -66,7 +66,7 @@ class oled():
         self.display_letters = 10
         self.ac_pos = 0
         hops=2
-        text = text + (len(text)%hops-1)*" "
+        text = text + (len(text)%hops)*" "
         self.scroll= True
         self.oled.fill(0)
         self.oled.show()

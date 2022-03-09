@@ -6,9 +6,7 @@ import os
 import pathlib
 
 
-
-
-#Button
+# Button
 class Button():
     def __init__(self, button_pin):
         gpio.setwarnings(False)
@@ -19,10 +17,10 @@ class Button():
     def button_presstime(self, cuttime):
         start = actime()
         endtime = start
-        while (gpio.input(self.button_pin) == 1) and (endtime - start) < cuttime :
+        while (gpio.input(self.button_pin) == 1) and (endtime - start) < cuttime:
             endtime = actime()
 
-        return endtime - start 
+        return endtime - start
 
     def button_presscounter(self, ti, cutval):
         presscounter = 0
@@ -31,7 +29,7 @@ class Button():
             beginning = cut_time(time.time())
             while cut_time(time.time()) - beginning < ti:
                 pressed = gpio.input(self.button_pin)
-                if prevpress != pressed and pressed == 1 :
+                if prevpress != pressed and pressed == 1:
                     presscounter += 1
                 if presscounter >= cutval:
                     break
@@ -40,75 +38,83 @@ class Button():
         return presscounter
 
 
-#Time
+# Time
 def actime(starttime):
-    actime= float(time.time()) - starttime
+    actime = float(time.time()) - starttime
     return cut_time(actime)
+
 
 def cut_time(ti):
     return float('{0:.3f}'.format(ti))
 
 
-
-#maths
+# maths
 def betrag(inp):
-    return (inp**2)**0.5
+    return (inp ** 2) ** 0.5
 
 
-
-#Buzzer
+# Buzzer
 class signal():
-    def __init__(self, buzzer_pin):
-        self.buzzer_pin = buzzer_pin 
+    def __init__(self, buzzer_pins, log_function=print):
+        self.log_function = log_function
+        self.buzzer_pins = buzzer_pins
         gpio.setwarnings(False)
         gpio.setmode(gpio.BCM)
-        gpio.setup(self.buzzer_pin, gpio.IN)
+        for entry in self.buzzer_pins:
+            gpio.setup(self.buzzer_pins[entry], gpio.OUT)
+            gpio.output(self.buzzer_pins[entry], gpio.LOW)
 
+    def signal(self, repetitions=5, duration=0.5, *argv):
+        try:
+            for i in range(repetitions):
 
-    def signal(self, repetitions=5, duration=0.5):
-        for i in range(repetitions):
-            gpio.output(self.buzzer_pin , gpio.HIGH)
-            sleep(duration)
-            gpio.output(self.buzzer_pin, gpio.LOW)
-            sleep(duration)
-
-
-
+                for entry in argv:
+                    gpio.output(self.buzzer_pins[entry], gpio.HIGH)
+                sleep(duration)
+                for entry in argv:
+                    gpio.output(self.buzzer_pins[entry], gpio.LOW)
+                sleep(duration)
+        except:
+            self.log_function("something wrong with signal")
 
 
 def find_time(search, time):
-        ac_pos=-1
-        while time[ac_pos]-time[-1] > search :
+    ac_pos = -1
+    try:
+        while time[ac_pos] - time[-1] > search:
             ac_pos -= 1
-
-        
-        if (time[-1]+search)-time[ac_pos+1]>time[ac_pos]-(time[-1]+search):
+        if (time[-1] + search) - time[ac_pos + 1] > time[ac_pos] - (time[-1] + search):
             ac_pos += 1
 
         return ac_pos
+    except IndexError:
+        return False
 
-#OS
-def shut_down():
-    print("shutdown called")
+
+
+
+
+# OS
+def shut_down(log_function=print):
+    log_function("shutdown called")
     # os.system("sudo shutdown now")
 
 
 def search_for_filename(path):
     name = path[:path.index(".")]
     ending = path[path.index("."):]
-    number= 0
-    path = name+str(number)+ending
+    number = 0
+    path = name + str(number) + ending
     while pathlib.Path(path).is_file():
         number += 1
-        path = name+ str(number) + ending
+        path = name + str(number) + "_" + str(cut_time(time.time())) + ending
     return path
+
 
 def search_for_directory(directory_name):
     number = 0
-    path = directory_name+str(number)
+    path = directory_name + str(number)
     while pathlib.Path(path).is_dir():
         number += 1
-        path = directory_name+ str(number)
+        path = directory_name + str(number) + "_" + str(cut_time(time.time()))
     return path
-
-

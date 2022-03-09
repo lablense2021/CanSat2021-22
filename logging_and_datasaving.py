@@ -1,9 +1,9 @@
 import time
 
-from matplotlib.font_manager import json_dump 
+from matplotlib.font_manager import json_dump
 import functions
 import threading
-import json
+
 
 """
 class time_mark(): #Zeitmarken von denen an die zeit gemessen werden kann
@@ -15,81 +15,60 @@ class time_mark(): #Zeitmarken von denen an die zeit gemessen werden kann
 
 class log():
     def __init__(self, starttime, filename):
-        self.starttime=starttime
-        self.path=functions.search_for_filename(filename)
-        self.current_log=""
-        self.time_marks={"log_start":self.starttime}
-        self.create_entry("starttime: "+ str(self.starttime))
-        self.create_entry("log_started")
-
+        self.starttime = starttime
+        self.path = functions.search_for_filename(filename)
+        self.current_log = ""
+        self.time_marks = {"log_start": self.starttime}
+        self.create_entry("starttime: " + str(self.starttime))
+        self.create_entry("log_started and will be saved in " + str(self.path))
 
     def time_mark(self, name):
-        self.time_marks[name]=functions.cut_time(time.time())
+        self.time_marks[name] = functions.cut_time(time.time())
         self.create_entry("time mark created: " + name)
 
     def get_time_passed(self, timein="log_start"):
-       
         timeout = functions.actime(self.time_marks[timein])
         return timeout
 
+    def create_entry(self, entrytext, timemark="log_start"):
+        entry = "\n" + "(" + str(self.get_time_passed(timemark)) + " since " + str(timemark) + ")" + str(entrytext)
 
-    def create_entry(self,entrytext, timemark="log_start"):
-        
-        entry="\n"+ "(" + str(self.get_time_passed(timemark)) + " since " + str(timemark) + ")" + str(entrytext)
-        
         print(entry)
         self.current_log += entry
-        with open(self.path, "w") as text_file: #speichern der änderung
+        with open(self.path, "w") as text_file:  # speichern der änderung
             text_file.write(self.current_log)
-    
+
 
 class flight_data_dictionnary():
-    def __init__(self, filename, timestamp_reference, logging_function=print):
+    def __init__(self, filename, timestamp_reference, log_function=print):
         self.path = functions.search_for_filename(filename)
-        self.logging_function= logging_function
-        self.logging_function("created flight_data_dictionnary")
-        self.timestamp_reference=timestamp_reference
-        self.data = {"info_about_dictionnary(time since timestamp) ":str(functions.actime(self.timestamp_reference))}
-        self.savingthread=threading.Thread(target=self.data_saving)
+        self.logging_function = log_function
+        self.logging_function("created flight data dictionnary: will be saved in" + str(self.path))
+        self.timestamp_reference = timestamp_reference
+        self.data = {"info about dictionnary(time since timestamp)": str(functions.actime(self.timestamp_reference))}
+        self.savingthread = threading.Thread(target=self.data_saving)
 
     def save_data(self):
         self.logging_function("data saved")
         json_dump(self.data, self.path)
 
     def data_saving(self):
-        while self.saving==True:
+        while self.saving:
             self.save_data()
             time.sleep(5)
-    
+
     def start_data_saving(self):
         self.logging_function("started data saving")
-        self.saving=True
+        self.saving = True
         self.savingthread.start()
-        
 
     def stop_data_saving(self):
         self.logging_function("stopped data saving")
-        self.saving=False
+        self.saving = False
 
 
-    
-
-
-
-    
-
-    
-
-
-    
-
-
-
-if __name__== "__main__":
+if __name__ == "__main__":
     log = log(functions.cut_time(time.time()), "logs.txt")
 
     time.sleep(3)
     log.create_entry("test entry")
-
-
-

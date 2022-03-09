@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # defining of menu
     options = ["Flight Control Software", "Acces CanSat through WLAN", "Shutdown CanSat"]
     when_called = [flight, lambda: read_data.read(button, button_open_menu, log.create_entry, display.start_scroll),
-                   functions.shut_down]
+                   lambda: functions.shut_down(log.create_entry)]
 
     menu = menu(options, when_called, log.create_entry, display.start_scroll)
     button_open_menu()
