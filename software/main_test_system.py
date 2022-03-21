@@ -106,6 +106,8 @@ def flight():
     data.stop_data_saving()
     display.close_oled()
 
+
+
     button_open_menu()
 
 

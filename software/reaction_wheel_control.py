@@ -38,6 +38,9 @@ class motor():
         else:
             self.motor.start(0)
 
+    def close_pwm(self):
+        self.motor.stop()
+
 
 class reaction_wheel():
     def __init__(self, current_speed, log_function=print):
@@ -82,3 +85,6 @@ class reaction_wheel():
             time.sleep(0.1)
         self.motor.rot(0)
         self.log_function("reaction wheel stopped")
+
+    def close(self):
+        self.motor.close_pwm()

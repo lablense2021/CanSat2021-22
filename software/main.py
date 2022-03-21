@@ -43,12 +43,12 @@ def button_open_menu():
     while True:
         presses = button.button_presscounter(1, 2)
         if presses == 1:
-            signals.signal(1, 0.5, "buzzer", "vibration")
+            signals.signal(("buzzer", "vibration"),1, 0.5, )
             menu.change_menu_option(1)
 
         if presses == 2:
             display.stop_scroll()
-            signals.signal(1, 2, "buzzer", "vibration")
+            signals.signal(("buzzer", "vibration"),1, 2, )
             menu.choose_option()
             break
         time.sleep(0.1)
@@ -88,7 +88,7 @@ def flight():
 
     log.create_entry("Now falling", "starttimeflight")
     display.start_scroll("Falling")
-    while bmp280.check_if_down() != True or button.button_presscounter(3, 2) != True:
+    while bmp280.check_if_down() != True and button.button_presscounter(3, 2) != True:
         print("falling")
         time.sleep(0.1)
 
@@ -96,11 +96,21 @@ def flight():
     bmp280.stop_thread()
     reac.stop_thread()
     imu.stop_thread()
+
     camera.close()
+    reac.close()
 
     data.stop_data_saving()
-    display.close_oled()
 
+
+    signals.start_thread(("buzzer", "vibration"),1, 2, )
+    log.create_entry("waiting to be found", "starttimeflight")
+    display.start_scroll("waiting to be found")
+    while button.button_presscounter(2, 2) != True:
+        time.sleep(0.05)
+    log.create_entry("found", "starttimeflight")
+    display.show_text("Found!!!")
+    signals.stop_thread()
     button_open_menu()
 
 
@@ -115,7 +125,7 @@ if __name__ == "__main__":
     display = oled.oled()
 
     # defining of menu
-    options = ["Flight Control Software", "Acces CanSat through WLAN", "Shutdown CanSat"]
+    options = ["Flight Control Software", "Access CanSat through WLAN", "Shutdown CanSat"]
     when_called = [flight, lambda: read_data.read(button, button_open_menu, log.create_entry, display.start_scroll),
                    functions.shut_down]
 

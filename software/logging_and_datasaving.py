@@ -27,6 +27,8 @@ class log():
         self.create_entry("time mark created: " + name)
 
     def get_time_passed(self, timein="log_start"):
+        if timein not in self.time_marks:
+            timein = "log_start"
         timeout = functions.actime(self.time_marks[timein])
         return timeout
 

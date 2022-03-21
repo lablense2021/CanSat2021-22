@@ -1,6 +1,7 @@
 from time import sleep
 import time
 import RPi.GPIO as gpio
+import threading
 import os
 
 import pathlib
@@ -60,22 +61,43 @@ class signal():
         self.buzzer_pins = buzzer_pins
         gpio.setwarnings(False)
         gpio.setmode(gpio.BCM)
+        self.signal_thread_active = False
         for entry in self.buzzer_pins:
             gpio.setup(self.buzzer_pins[entry], gpio.OUT)
             gpio.output(self.buzzer_pins[entry], gpio.LOW)
 
-    def signal(self, repetitions=5, duration=0.5, *argv):
-        try:
-            for i in range(repetitions):
+    def signal(self, signal_types, repetitions=5, duration=0.5):
 
-                for entry in argv:
+        #try:
+        for i in range(repetitions):
+
+                for entry in signal_types:
                     gpio.output(self.buzzer_pins[entry], gpio.HIGH)
                 sleep(duration)
-                for entry in argv:
+                for entry in signal_types:
                     gpio.output(self.buzzer_pins[entry], gpio.LOW)
                 sleep(duration)
+        #except:
+            #self.log_function("something wrong with signal: ", str(signal_types), str(repetitions), str(duration),)
+
+    def signal_thread_function(self, signal_types, repetitions=5, duration=0.5, ):
+        while self.signal_thread_active == True:
+            self.signal(signal_types, repetitions, duration)
+            time.sleep(0.01)
+
+    def start_thread(self, signal_types, repetitions=5, duration=0.5, ):
+        self.thread = threading.Thread(
+            target=lambda: self.signal_thread_function(signal_types, repetitions, duration, ))
+        self.signal_thread_active = True
+        self.thread.start()
+
+    def stop_thread(self):
+        self.signal_thread_active = False
+        try:
+            while self.thread.is_alive() == True:
+                time.sleep(0.1)
         except:
-            self.log_function("something wrong with signal")
+            self.log_function("failed to stop, signal doesn´t exist")
 
 
 def find_time(search, time):
@@ -89,9 +111,6 @@ def find_time(search, time):
         return ac_pos
     except IndexError:
         return False
-
-
-
 
 
 # OS
