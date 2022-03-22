@@ -13,8 +13,8 @@ class pi_camera():
         try:
             self.camera = picamera.PiCamera()
             # self.camera.resolution = resolution
-        except:
-            self.log_function("camera init error")
+        except Exception as exception:
+            self.log_function("camera init failed: " + str(type(exception)) + str(exception))
         self.pic_names = pic_names
         self.current_pic_number = 0
         self.format = str(pic_names[pic_names.index(".") + 1:])
@@ -32,22 +32,38 @@ class pi_camera():
             try:
                 self.camera.capture(name, self.format)
                 self.log_function("camera image taken")
-            except:
+            except Exception as exception:
                 with open(name + ".txt", "w") as text_file:
                     text_file.write("An Error occurred")
-                self.log_function("camera image error ")
+                self.log_function("take_image failed: " + str(type(exception)) + str(exception))
+            time.sleep(0.05)
 
     def start_imaging(self):
-        self.thread_on = True
-        self.thread.start()
-        self.log_function("imaging thread started")
+        try:
+            self.thread_on = True
+            self.thread.start()
+            self.log_function("imaging thread started")
+        except Exception as exception:
+            self.log_function("start_imaging failed: " +str(type(exception)) + str(exception))
+
 
     def stop_thread(self):
-        self.thread_on = False
-        while self.thread.is_alive():
-            self.log_function("waiting for imaging_thread to stop")
-            time.sleep(0.1)
-        self.log_function("imaging thread stopped")
+        try:
+            self.thread_on = False
+            start_time = functions.cut_time(time.time())
+            while self.thread.is_alive() and functions.cut_time(time.time()) - start_time < 10:
+                self.log_function("waiting for imaging_thread to stop")
+                time.sleep(0.1)
+            self.log_function("imaging thread stopped")
+        except Exception as exception:
+            self.log_function("stop_thread failed: " + str(type(exception)) + str(exception))
 
     def close(self):
-        self.camera.close()
+        try:
+            self.camera.close()
+        except Exception as exception:
+            self.log_function("close camera failed: " + str(type(exception)) + str(exception))
+
+
+
+

@@ -55,8 +55,9 @@ class reaction_wheel():
         while self.thread_on == True:
             correction_val = 0
             try:
-                read_val = self.current_speed()
-            except:
+                read_val = float(self.current_speed())
+            except Exception as exception:
+                self.log_function("reaction wheel: read current speed failed " + str(type(exception)) + str(exception))
                 read_val = 0
 
             #print(read_val)

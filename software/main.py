@@ -43,12 +43,12 @@ def button_open_menu():
     while True:
         presses = button.button_presscounter(1, 2)
         if presses == 1:
-            signals.signal(("buzzer", "vibration"),1, 0.5, )
+            signals.signal(("buzzer", "vibration"), 1, 0.25, )
             menu.change_menu_option(1)
 
         if presses == 2:
             display.stop_scroll()
-            signals.signal(("buzzer", "vibration"),1, 2, )
+            signals.signal(("buzzer", "vibration"), 1, 1, )
             menu.choose_option()
             break
         time.sleep(0.1)
@@ -76,19 +76,23 @@ def flight():
     reac = reaction_wheel_control.reaction_wheel(lambda: data.data["imu"][5][-1],
                                                  lambda entry: log.create_entry(entry, "starttimeflight"))
     bmp280.start_thread()
-    """while bmp280.check_if_acent() != True:
-        print("Waiting on acent")main.py
+    camera.start_imaging()
+    imu.start_thread()
+
+    display.start_scroll("Waiting for acent!")
+    """
+    while bmp280.check_if_acent() != True:
+        print("Waiting on acent")
     
     while bmp280.check_if_decent() != True:
        print("waiting on decent")"""
 
-    camera.start_imaging()
-    imu.start_thread()
     reac.start_thread()
 
     log.create_entry("Now falling", "starttimeflight")
     display.start_scroll("Falling")
-    while bmp280.check_if_down() != True and button.button_presscounter(3, 2) != True:
+    time.sleep(20)
+    while bmp280.check_if_down() != True and button.button_presscounter(3, 2) != 3:
         print("falling")
         time.sleep(0.1)
 
@@ -102,11 +106,10 @@ def flight():
 
     data.stop_data_saving()
 
-
-    signals.start_thread(("buzzer", "vibration"),1, 2, )
+    signals.start_thread(("buzzer", "vibration"), 1, 2, )
     log.create_entry("waiting to be found", "starttimeflight")
     display.start_scroll("waiting to be found")
-    while button.button_presscounter(2, 2) != True:
+    while button.button_presscounter(2, 2) != 2:
         time.sleep(0.05)
     log.create_entry("found", "starttimeflight")
     display.show_text("Found!!!")
@@ -121,8 +124,8 @@ if __name__ == "__main__":
     log.create_entry("main started")
     button = functions.Button(16)
     signals = functions.signal({"buzzer": 1, "vibration": 7})
-
-    display = oled.oled()
+    signals.signal(("buzzer", "vibration"), 1, 2)
+    display = oled.oled(log.create_entry)
 
     # defining of menu
     options = ["Flight Control Software", "Access CanSat through WLAN", "Shutdown CanSat"]

@@ -19,17 +19,16 @@ class bmp280():
         try:
             i2c = board.I2C()
             self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, 0x76)
-        except:
-            self.log_function("Error occurred in I2C config")
+        except Exception as exception:
+            self.log_function("bmp280: init failed: ", str(type(exception)), str(exception))
         self.thread = threading.Thread(target=lambda: self.data_capture("bmp280"))
 
     def calibrate_altitude(self):
         try:
-            #print(self.sensor.sea_level_pressure)
-            self.sensor.sea_level_pressure = pressure = functions.cut_time(self.sensor.pressure)
-        except:
-            pass
-
+            self.sensor.sea_level_pressure = functions.cut_time(self.sensor.pressure)
+            self.log_function("bmp280: calibrate_altitude success")
+        except Exception as exception:
+            self.log_function("bmp280: calibrate_altitude failed ", str(type(exception)), str(exception))
 
     def read_data(self):
         try:
@@ -37,8 +36,9 @@ class bmp280():
             pressure = functions.cut_time(self.sensor.pressure)
             altitude = functions.cut_time(self.sensor.altitude)
             data = [temperature, pressure, altitude]
-        except:
-            data = "ErrorOccured"
+        except Exception as exception:
+            self.log_function("bmp280: read_data failed ", str(type(exception)), str(exception))
+            data = ['E', 'E', 'E']
         self.log_function("bmp280 data read: " + str(data))
         return data
 
@@ -49,25 +49,37 @@ class bmp280():
         self.data[data_entry][3].append(functions.actime(self.timestamp_reference))
 
     def data_capture(self, data_entry):
-        while self.capture_on == True:
-            self.safe_data(data_entry)
-            time.sleep(0.01)
+        try:
+            while self.capture_on == True:
+                self.safe_data(data_entry)
+                time.sleep(0.01)
+        except Exception as exception:
+            self.log_function("bmp280: data_capture failed: ", str(type(exception)), str(exception))
 
     def start_thread(self):
-        self.capture_on = True
-        self.thread.start()
-        self.log_function("bmp280 thread started")
+        try:
+            self.capture_on = True
+            self.thread.start()
+            self.log_function("bmp280 thread started")
+        except Exception as exception:
+            self.log_function("bmp280: start_thread failed: ", str(type(exception)), str(exception))
 
     def stop_thread(self):
-        self.capture_on = False
-        while self.thread.is_alive():
-            time.sleep(0.1)
-        self.log_function("bmp280 thread stopped")
+        try:
+            self.capture_on = False
+            while self.thread.is_alive():
+                time.sleep(0.1)
+            self.log_function("bmp280 thread stopped")
+        except Exception as exception:
+            self.log_function("bmp280: stop_thread failed: ", str(type(exception)), str(exception))
 
     def sensor_test(self):
-        self.log_function("sensor test started")
-        for i in range(20):
-            self.safe_data("bmp280_test")
+        try:
+            self.log_function("sensor test started")
+            for i in range(20):
+                self.safe_data("bmp280_test")
+        except Exception as exception:
+            self.log_function("bmp280: sensor_test failed: ", str(type(exception)), str(exception))
 
     def speed(self):
         try:

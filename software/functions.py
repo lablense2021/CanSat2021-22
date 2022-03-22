@@ -123,17 +123,17 @@ def search_for_filename(path):
     name = path[:path.index(".")]
     ending = path[path.index("."):]
     number = 0
-    path = name + str(number) + ending
-    while pathlib.Path(path).is_file():
+    path = name + str(number)
+    while len(list(pathlib.Path("./").glob(path+"*"))) != 0:
         number += 1
-        path = name + str(number) + "_" + str(cut_time(time.time())) + ending
-    return path
+        path = name + str(number)
+    return str(path+"_" + str(cut_time(time.time())) + ending)
 
 
 def search_for_directory(directory_name):
     number = 0
     path = directory_name + str(number)
-    while pathlib.Path(path).is_dir():
+    while len(list(pathlib.Path("./").glob(path+"*"))) != 0:
         number += 1
-        path = directory_name + str(number) + "_" + str(cut_time(time.time()))
-    return path
+        path = directory_name + str(number)
+    return str(path + "_" + str(cut_time(time.time())))
