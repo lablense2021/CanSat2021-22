@@ -80,18 +80,24 @@ def flight():
     imu.start_thread()
 
     display.start_scroll("Waiting for acent!")
-    """
+
     while bmp280.check_if_acent() != True:
+        time.sleep(0.0001)
         print("Waiting on acent")
-    
+
+
+    log.create_entry("now acent", "starttimeflight")
+
+
+
     while bmp280.check_if_decent() != True:
-       print("waiting on decent")"""
-
+       print("waiting on decent")
+    signals.start_thread(("buzzer", "vibration"), 1, 2, )
     reac.start_thread()
-
     log.create_entry("Now falling", "starttimeflight")
     display.start_scroll("Falling")
-    time.sleep(20)
+
+    #time.sleep(20)
     while bmp280.check_if_down() != True and button.button_presscounter(3, 2) != 3:
         print("falling")
         time.sleep(0.1)
@@ -100,17 +106,16 @@ def flight():
     bmp280.stop_thread()
     reac.stop_thread()
     imu.stop_thread()
-
     camera.close()
     reac.close()
-
     data.stop_data_saving()
 
-    signals.start_thread(("buzzer", "vibration"), 1, 2, )
     log.create_entry("waiting to be found", "starttimeflight")
     display.start_scroll("waiting to be found")
+
     while button.button_presscounter(2, 2) != 2:
         time.sleep(0.05)
+
     log.create_entry("found", "starttimeflight")
     display.show_text("Found!!!")
     signals.stop_thread()

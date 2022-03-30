@@ -20,7 +20,7 @@ class bmp280():
             i2c = board.I2C()
             self.sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, 0x76)
         except Exception as exception:
-            self.log_function("bmp280: init failed: ", str(type(exception)), str(exception))
+            self.log_function("bmp280: init failed: "+ str(type(exception))+ str(exception))
         self.thread = threading.Thread(target=lambda: self.data_capture("bmp280"))
 
     def calibrate_altitude(self):
@@ -28,7 +28,7 @@ class bmp280():
             self.sensor.sea_level_pressure = functions.cut_time(self.sensor.pressure)
             self.log_function("bmp280: calibrate_altitude success")
         except Exception as exception:
-            self.log_function("bmp280: calibrate_altitude failed ", str(type(exception)), str(exception))
+            self.log_function("bmp280: calibrate_altitude failed "+ str(type(exception))+ str(exception))
 
     def read_data(self):
         try:
@@ -37,7 +37,7 @@ class bmp280():
             altitude = functions.cut_time(self.sensor.altitude)
             data = [temperature, pressure, altitude]
         except Exception as exception:
-            self.log_function("bmp280: read_data failed ", str(type(exception)), str(exception))
+            self.log_function("bmp280: read_data failed "+ str(type(exception))+ str(exception))
             data = ['E', 'E', 'E']
         self.log_function("bmp280 data read: " + str(data))
         return data
@@ -54,7 +54,7 @@ class bmp280():
                 self.safe_data(data_entry)
                 time.sleep(0.01)
         except Exception as exception:
-            self.log_function("bmp280: data_capture failed: ", str(type(exception)), str(exception))
+            self.log_function("bmp280: data_capture failed: "+ str(type(exception))+ str(exception))
 
     def start_thread(self):
         try:
@@ -62,7 +62,7 @@ class bmp280():
             self.thread.start()
             self.log_function("bmp280 thread started")
         except Exception as exception:
-            self.log_function("bmp280: start_thread failed: ", str(type(exception)), str(exception))
+            self.log_function("bmp280: start_thread failed: "+ str(type(exception))+ str(exception))
 
     def stop_thread(self):
         try:
@@ -71,7 +71,7 @@ class bmp280():
                 time.sleep(0.1)
             self.log_function("bmp280 thread stopped")
         except Exception as exception:
-            self.log_function("bmp280: stop_thread failed: ", str(type(exception)), str(exception))
+            self.log_function("bmp280: stop_thread failed: "+ str(type(exception))+ str(exception))
 
     def sensor_test(self):
         try:
@@ -79,7 +79,7 @@ class bmp280():
             for i in range(20):
                 self.safe_data("bmp280_test")
         except Exception as exception:
-            self.log_function("bmp280: sensor_test failed: ", str(type(exception)), str(exception))
+            self.log_function("bmp280: sensor_test failed: "+ str(type(exception))+ str(exception))
 
     def speed(self):
         try:

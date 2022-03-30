@@ -14,12 +14,13 @@ import adafruit_lis3mdl
 
 class imu():
     def __init__(self, data, timestamp_reference, log_function=print):
+        self.log_function = log_function
         try:
             self.i2c = board.I2C()
             self.accel_gyro = adafruit_lsm6ds.lsm6ds33.LSM6DS33(self.i2c, 0x6a)
             self.magnetometer = adafruit_lis3mdl.LIS3MDL(self.i2c, 0x1c)
             self.timestamp_reference = timestamp_reference
-            self.log_function = log_function
+
             self.data = data
             self.data["imu"] = [[], [], [], [], [], [], [], [], [], []]
             self.data["imu_test"] = [[], [], [], [], [], [], [], [], []]
@@ -59,15 +60,14 @@ class imu():
             self.log_function("imu safe_data failed: " + str(type(exception)) + str(exception))
 
     def print_data(self, data):
-        print(
-            "Acceleration: X:{0:7.2f}, Y:{1:7.2f}, Z:{2:7.2f} m/s^2".format(*data[0])
-        )
+        print("Acceleration: X:{0:7.2f}, Y:{1:7.2f}, Z:{2:7.2f} m/s^2".format(*data[0]))
         print("Gyro          X:{0:7.2f}, Y:{1:7.2f}, Z:{2:7.2f} rad/s".format(*data[1]))
         print("Magnetic      X:{0:7.2f}, Y:{1:7.2f}, Z:{2:7.2f} uT".format(*data[2]))
         print("")
 
     def calibrate(self, path):
         try:
+            self.log_function("calibrating imu")
             if pathlib.Path(path).is_file():
                 self.calibration_values = json_load(path)["imu_calibration"]
             else:
@@ -76,7 +76,6 @@ class imu():
                     self.safe_data("imu_calibration_values")
 
                 for n in range(len(self.calibration_values)):
-                    print(n)
                     if n < 6:
                         sum = 0
                         for i in self.data["imu_calibration_values"][n]:
@@ -90,6 +89,22 @@ class imu():
                 self.log_function("imu calibration done. values: " + str(self.calibration_values))
         except Exception as exception:
             self.log_function("imu calibration failed: " + str(type(exception)) + str(exception))
+
+    def check_if_acent(self):
+        try:
+            print(self.data["imu"][2][-1])
+            if self.data["imu"][2][-1] > 30:
+                return True
+        except:
+            return "NA"
+
+    def check_if_decent(self):
+        try:
+            print(self.data["imu"][2][-1])
+            if self.data["imu"][2][-1] < 5:
+                return True
+        except:
+            return "NA"
 
     # Thread
     def start_thread(self):
